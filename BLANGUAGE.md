@@ -43,6 +43,7 @@ name[max_index] constant0, constant1, constant2;  /* global vector definition */
 { ... }                      /* statement list */
 expr;                        /* expression statement */
 return(expr);                /* return statement */
+return;                      /* return statement (no value) */
 auto name0, name1, name2;    /* local variable declaration */
 extrn name0, name1, name2;   /* external symbol declaration */
 if (expr) stmt               /* if statement */
