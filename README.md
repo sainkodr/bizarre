@@ -17,11 +17,11 @@ the examples to get started.
 
 ## Links
 
-[Brief B Language Summary](./BLANGUAGE.md)
-[Ken Thompson's B Manual](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/kbman.html)
-[A Tutorial Introduction to the Language B](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/btut.html)
-[Users' Reference to B on MH-TSS](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/bref.html)
-[PDP-7 and PDP-11 Versions of B](http://squoze.net/B/)
-[B Compiler in B by Robert Swierczek](https://github.com/DoctorWkt/pdp7-unix/blob/555eb30fc76b8fa29095d32eca9a43e9b1638288/src/other/b.b)
-[B Compiler in Rust by Tsoding](https://github.com/bext-lang/b)
-[Wikipedia xD](https://en.wikipedia.org/wiki/B_(programming_language))
+- [Brief B Language Summary](./BLANGUAGE.md)
+- [Ken Thompson's B Manual](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/kbman.html)
+- [A Tutorial Introduction to the Language B](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/btut.html)
+- [Users' Reference to B on MH-TSS](https://www.nokia.com/bell-labs/about/dennis-m-ritchie/bref.html)
+- [PDP-7 and PDP-11 Versions of B](http://squoze.net/B/)
+- [B Compiler in B by Robert Swierczek](https://github.com/DoctorWkt/pdp7-unix/blob/555eb30fc76b8fa29095d32eca9a43e9b1638288/src/other/b.b)
+- [B Compiler in Rust by Tsoding](https://github.com/bext-lang/b)
+- [Wikipedia xD](https://en.wikipedia.org/wiki/B_(programming_language))
