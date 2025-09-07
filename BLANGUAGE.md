@@ -39,10 +39,10 @@ nextitem() { data = &data[1]; return(data[-1]); }
 ```c
 name() { ... }                                    /* function definition */
 name(name0, name1, name3) { ... }                 /* function definition with parameters */
-name;                                             /* global variable declaration */
+name;                                             /* global variable definition (zeroed) */
 name constant;                                    /* global variable definition */
 name constant0, constant1, constant2;             /* global variable? definition */
-name[max_index];                                  /* global vector declaration */
+name[max_index];                                  /* global vector definition (zeroed) */
 name[] constant0, constant1, constant2;           /* global vector definition */
 name[max_index] constant0, constant1, constant2;  /* global vector definition */
 /* max_index is the number of elements minus one;
