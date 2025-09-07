@@ -1,0 +1,7 @@
+bizarre.c
+road/*.c
+bootstrap
+bizarre
+*.exe
+*.o
+*.obj
