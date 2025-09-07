@@ -14,6 +14,26 @@ digit then any number of alnum  /* integer */
 { } ( ) [ ] ! * / % + - < > & | ? : = , ;
 ```
 
+## semantics
+
+### vector
+
+Vector is NOT the same as an array in C. Vector is a pointer.
+
+```c
+myvector[2]; /* vector in B */
+/* == */
+word_t myvector_array[3];
+word_t *myvector = myvector_array; /* C equivalent */
+```
+
+Which means you can modify it like a pointer.
+
+```c
+data[99];
+nextitem() { data = &data[1]; return(data[-1]); }
+```
+
 ## extdef
 
 ```c
@@ -45,6 +65,7 @@ expr;                        /* expression statement */
 return(expr);                /* return statement */
 return;                      /* return statement (no value) */
 auto name0, name1, name2;    /* local variable declaration */
+auto name[max_index];        /* local vector */
 extrn name0, name1, name2;   /* external symbol declaration */
 if (expr) stmt               /* if statement */
 if (expr) stmt else stmt     /* if-else statement */
@@ -78,37 +99,49 @@ case constant:               /* case inside of a switch statement */
 /* classic runtime: */
 { main(); exit(); }
 /* implement first: */
+         argv[]                       /* arguments where argv[0]+1 is argc */
 c      = char(string, i);             /* get ith byte in a string */
 error  = close(file);                 /* close a file stream */
-file   = creat(string, mode);         /* create a file */
+file   = creat(path, truncate);       /* create a file */
          exit();                      /* terminate the program */
 char   = getchar();                   /* read a byte from stdin */
          lchar(string, i, char);      /* set ith byte in a string */
-file   = open(string, mode);          /* open a file */
+file   = open(path, writing);         /* open a file */
          printf(format, argl, ...);   /* print formated text (%d %o %c %s %%) */
          printn(number, base);        /* print a number in a base */
          putchar(char);               /* print WORD_SIZE characters */
 nread  = read(file, buffer, count);   /* read bytes from a file stream */
 error  = seek(file, offset, type);    /* offset a file stream (type: 0 begin, 1 current, 2 end) */
 nwrite = write(file, buffer, count);  /* read bytes to a file stream */
-         argv[]                       /* arguments where argv[0]+1 is argc */
 /* implement second: */
-error = chdir(string) ;
-error = chmod(string, mode);
-error = chown(string, owner);
+error = chdir(path);
+error = chmod(path, mode);
+error = chown(path, owner);
         ctime(time, date);
-        execl(string, arg0, arg1, ..., 0);
-        execv(string, argv, count);
+        execl(path, arg0, arg1, ..., 0);
+        execv(path, argv, count);
 error = fork();
 error = fstat(file, status);
 id    = getuid();
 error = gtty(file, ttystat);
-error = link(string1, string2);
-error = mkdir(string, mode);
+error = link(path1, path2);
+error = mkdir(path, access);
 error = setuid(id);
-error = stat(string, status);
+error = stat(path, status);
 error = stty(file, ttystat);
         time(timev);
-error = unlink(string);
+error = unlink(path);
 error = wait();
+/* bizarre library: */
+value = bzg8(ptr);                 /* load 8-bit  integer by ptr */
+value = bzg16(ptr);                /* load 16-bit integer by ptr */
+value = bzg32(ptr);                /* load 32-bit integer by ptr */
+value = bzg64(ptr);                /* load 64-bit integer by ptr */
+ptr   = bzmalloc(n);               /* allocate n bytes of zeroed memory, returns 0 on failure */
+ptr   = bzrelloc(oldptr, newsize); /* allocate/free memory, any new chunk is zeroed, returns 0 on failure */
+ptr   = bzs8(ptr, value);          /* store 8-bit  integer by ptr */
+ptr   = bzs16(ptr, value);         /* store 16-bit integer by ptr */
+ptr   = bzs32(ptr, value);         /* store 32-bit integer by ptr */
+ptr   = bzs64(ptr, value);         /* store 64-bit integer by ptr */
+        bzwsize;                   /* word size in bytes */
 ```
