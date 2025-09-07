@@ -7,7 +7,7 @@
 alpha then any number of alnum  /* name */
 digit then any number of alnum  /* integer */
 ' up to WORD_SIZE print/mapch ' /* character */
-" any number of print/mapch "   /* string (null terminated) */
+" any number of print/mapch "   /* string ('*e' terminated, NOT '\0') */
 /* punctuators and operators: */
 =<= =>= === =!= =<< =>>
 ++ -- << >> <= >= == != =+ =- =* =/ =% =| =& =< =>
