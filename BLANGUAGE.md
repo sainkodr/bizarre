@@ -99,7 +99,7 @@ case constant:               /* case inside of a switch statement */
 /* classic runtime: */
 { main(); exit(); }
 /* implement first: */
-         argv[]                       /* arguments where argv[0]+1 is argc */
+         argv[];                      /* arguments where argv[0]+1 is argc */
 c      = char(string, i);             /* get ith byte in a string */
 error  = close(file);                 /* close a file stream */
 file   = creat(path, truncate);       /* create a file */
