@@ -1,19 +1,13 @@
 /* bizarre.b - B compiler */
 /*************************************************************************************************/
-execb; /* final PE executable */
-textb; /* .text section */
-datab; /* .data section */
-basefile 020000000;
-basecode 020010000;
-basedata 020020000;
+outb; /* final PE executable */
 /*************************************************************************************************/
 die(s) {
-  while (char(s, 0) != '*e') {
-    putchar(char(s, 0));
-    ++s;
-  }
-  
-  putchar('*n');
+  auto n;
+
+  n = 0; while (char(s, n) != '*e') { ++n; }
+  write(2, s, n);
+  write(2, "*n", 1);
   exit();
 }
 /*************************************************************************************************/
@@ -28,15 +22,27 @@ copy(d, s, n) {
   return(d);
 }
 /*************************************************************************************************/
+mset(n, a, v)
+{
+  auto i;
+  
+  i = 0; while (i < n) {
+    lchar(a, i, v);
+    ++i;
+  }
+  
+  return(a);
+}
+/*************************************************************************************************/
 xrelloc(oldptr, newsize) {
   auto p;
   
   p = bzrelloc(oldptr, newsize);
-  if (p == 0) die("xrelloc");
+  if (p == 0) { die("xrelloc"); }
   return(p);
 }
 /*************************************************************************************************/
-dtoi(c) { if ('0' <= c & c <= '9') return(c - '0'); else return(c - 'A' + 10); }
+dtoi(c) { if ('0' <= c & c <= '9') { return(c - '0'); } else { return(c - 'A' + 10); } }
 /*************************************************************************************************/
 bsize(bp)   { return(&bp[0][-1]); }
 bcapact(bp) { return(&bp[0][-2]); }
@@ -53,7 +59,7 @@ bnew(capact0) {
 bneed(bp, n) {
   auto newsize;
 
-  if (*bcapact(bp) >= n) return;
+  if (*bcapact(bp) >= n) { return; }
   n =* 2;
   newsize = bzwsize * 3 + n + 1;
   *bp = xrelloc(*bp - bzwsize * 3, newsize) + bzwsize * 3;
@@ -102,150 +108,95 @@ balign(bp, x)
 
   off = *boffset(bp);
   
-  if (off % x != 0)
-  {
+  if (off % x != 0) {
     btake(bp, x - (off % x));
   }
   
   return(off);
 }
 /*************************************************************************************************/
-section(si, aloc, addr, size, off)
+balignop(bp, x)
 {
-  auto sh;
-  
-  sh = execb + 392 + si * 40;
-  
-  bzs32(sh + 8,  aloc);
-  bzs32(sh + 12, addr);
-  bzs32(sh + 16, size);
-  bzs32(sh + 20, off);
-  
-  return(sh);
+  auto off;
+
+  off = balign(bp, x);
+  mset(*boffset(bp) - off, *bp + off, 144); /* 144 == 0x90 == nop */
+  return(off);
 }
 /*************************************************************************************************/
-ohcodesz;   /* x*512 */
-ohdatasz;   /* x*512 */
-ohentry;    /* RVA to _start */
-ohtotlsz;   /* how much to allocate */
-ohchksum;   /* checksum for words in the entire file */
-ohsubsys 3; /* 2 - GUI, 3 - Console */
-ohimpadr;   /* import directory table RVA  */
-ohimpsiz;   /* import directory table size */
-ohiatadr;   /* import address table RVA  */
-ohiatsiz;   /* import address table size */
-/*************************************************************************************************/
-updateoh()
-{
-  bzs32(execb + 156, ohcodesz);
-  bzs32(execb + 160, ohdatasz);
-  bzs32(execb + 168, ohentry);
-  bzs32(execb + 208, ohtotlsz);
-  bzs32(execb + 216, ohchksum);
-  bzs16(execb + 220, ohsubsys);
-  bzs32(execb + 272, ohimpadr);
-  bzs32(execb + 276, ohimpsiz);
-  bzs32(execb + 360, ohiatadr);
-  bzs32(execb + 364, ohiatsiz);
-}
+petextva 07000; /* .text section virtual address + offset */
 /*************************************************************************************************/
 main() {
-  auto fd, i, impoff, iltoff, nameoff, iatoff, exitname, temp, wp, wpend;
+  auto fd, i, impoff, iltoff, nameoff, iatoff, exitname, temp, wp, wpend, codeoff, ohchksum;
   
-  execb = bnew(2048);
-  textb = bnew(2048);
-  datab = bnew(2048);
+  outb = bnew(2048);
   
   /* MS-DOS header + stub */
-  bemitx(&execb, 32, "4D5A80000100000004001000FFFF000040010000000000004000000000000000");
-  bemitx(&execb, 32, "0000000000000000000000000000000000000000000000000000000080000000");
-  bemitx(&execb, 32, "0E1FBA0E00B409CD21B8014CCD21546869732070726F6772616D2063616E6E6F");
-  bemitx(&execb, 32, "742062652072756E20696E20444F53206D6F64652E0D0A240000000000000000");
+  bemitx(&outb, 32, "4D5A80000100000004001000FFFF000040010000000000004000000000000000");
+  bemitx(&outb, 32, "0000000000000000000000000000000000000000000000000000000080000000");
+  bemitx(&outb, 32, "0E1FBA0E00B409CD21B8014CCD21546869732070726F6772616D2063616E6E6F");
+  bemitx(&outb, 32, "742062652072756E20696E20444F53206D6F64652E0D0A240000000000000000");
   /* PE64 header + PE64 optional header */
-  bemitx(&execb, 32, "5045000064860200000000000000000000000000F0002F020B02060000000000");
-  bemitx(&execb, 32, "0000000000000000000000000010000000004000000000000010000000020000");
-  bemitx(&execb, 32, "0400000000000000040000000000000000000000000200000000000003000000");
-  bemitx(&execb, 32, "0000100000000000001000000000000000001000000000000010000000000000");
-  bemitx(&execb, 8,  "0000000010000000");
+  bemitx(&outb, 32, "5045000064860100000000000000000000000000F0002F020B02060000000000");
+  bemitx(&outb, 32, "0000000000000000000000000010000000004000000000000010000000020000");
+  bemitx(&outb, 32, "0400000000000000040000000000000000000000000200000000000003000000");
+  bemitx(&outb, 32, "0000100000000000001000000000000000001000000000000010000000000000");
+  bemitx(&outb, 8,  "0000000010000000");
   /* data directories */
-  btake(&execb, 128);
+  btake(&outb, 128);
   /* section table */
-  bemit(&execb, 8, ".text*0*0*0");
-  bemitx(&execb, 32, "0000000000000000000000000000000000000000000000000000000020000060");
-  bemit(&execb, 8, ".data*0*0*0");
-  bemitx(&execb, 32, "00000000000000000000000000000000000000000000000000000000400000C0");
+  bemit(&outb, 8, ".text*0*0*0");
+  bemitx(&outb, 32, "00000000001000000000000000020000000000000000000000000000600000E0");
+
   /* align to 512 */
-  btake(&execb, 40);
+  btake(&outb, 80);
   
-  /* write .code */
-  bemitx(&textb, 29, "554889E54881EC20000000B8450000004989C24C89D1E800000000C9C3");
-  balign(&textb, 16);
-  temp = bemitx(&textb, 8, "FF25000000000000");
+  /* write imports */
+  impoff = btake(&outb, 40);
+  iatoff = btake(&outb, 16);
+  iltoff = btake(&outb, 16);
+
+  nameoff = bemit(&outb, 11, "msvcrt.dll*0");
+  exitname = bemit(&outb, 7, "*0*0exit*0");
   
-  bzs32(textb + 23, temp - 23 - 4);
+  bzs64(outb + iatoff, petextva + exitname);
+  bzs64(outb + iltoff, petextva + exitname);
   
-  /* write .data */
-  impoff = btake(&datab, 40);
-  iatoff = btake(&datab, 16);
-  iltoff = btake(&datab, 16);
+  bzs32(outb + impoff + 0,  petextva + iltoff);
+  bzs32(outb + impoff + 12, petextva + nameoff);
+  bzs32(outb + impoff + 16, petextva + iatoff);
+  
+  /* write libb */
+  balignop(&outb, 16);
+  codeoff = bemitx(&outb, 29, "554889E54881EC20000000B8FF0000004989C24C89D1E800000000C9C3");
+  balignop(&outb, 16);
+  temp = bemitx(&outb, 8, "FF25000000000000");
+  
+  bzs32(outb + codeoff + 23, temp - (codeoff + 23) - 4);
   
   temp =+ 2;
-  bzs32(textb + temp, (basedata + iatoff) - (basecode + temp) - 4);
+  bzs32(outb + temp, iatoff - temp - 4);
   
-  nameoff = bemit(&datab, 11, "msvcrt.dll*0");
-  exitname = bemit(&datab, 7, "*0*0exit*0");
-  
-  bzs64(datab + iatoff, basedata - basefile + exitname);
-  bzs64(datab + iltoff, basedata - basefile + exitname);
-  
-  bzs32(datab + impoff + 0,  basedata - basefile + iltoff);
-  bzs32(datab + impoff + 12, basedata - basefile + nameoff);
-  bzs32(datab + impoff + 16, basedata - basefile + iatoff);
+  /* compile */
   
   /* backpatch */
-  bemit(&execb, *bsize(&textb), textb);
-  balign(&execb, 512);
-  bemit(&execb, *bsize(&datab), datab);
-  balign(&execb, 512);
+  balign(&outb, 512);
   
-  section(0, 512, basecode - basefile, 512, 512);
-  section(1, 512, basedata - basefile, 512, 512 * 2);
+  bzs32(outb + 400, 512); /* allocate */
+  bzs32(outb + 408, 512); /* size */
   
-  ohcodesz = 512;
-  ohdatasz = 512;
-  ohentry = basecode - basefile;
-  ohtotlsz = 040000;
-  ohimpadr = basedata - basefile + impoff;
-  ohimpsiz = 40;
-  ohiatadr = basedata - basefile + iatoff;
-  ohiatsiz = 16;
-  updateoh();
-  
-  /* calc checksum */
-  /* HMMM: do I need this? */
-  /*
-  ohchksum = 0;
-  wp = execb;
-  wpend = execb + *bsize(&execb);
-  
-  while (wp != wpend)
-  {
-    ohchksum =+ bzg16(wp);
-    ohchksum = (ohchksum + (ohchksum >> 16)) & 0177777;
-    wp =+ 2;
-  }
-  
-  ohchksum =+ *bsize(&execb);
-
-  updateoh();
-  */
+  bzs32(outb + 156, 512); /* code size (x*512) */
+  bzs32(outb + 168, petextva + codeoff); /* RVA of entry point */
+  bzs32(outb + 208, 040000); /* total size (how much to allocate) */
+  bzs16(outb + 220, 3); /* subsystem (2 - GUI, 3 - Console) */
+  bzs32(outb + 272, petextva + impoff); /* RVA of import directory table */
+  bzs32(outb + 276, 40); /* size of import directory table */
+  bzs32(outb + 360, petextva + iatoff); /* RVA of import address table */
+  bzs32(outb + 364, 16); /* size of import address table */
   
   /* save the executable */
-  fd = open("a.exe", 1);
-  if (fd < 0) die("can't open");
-  write(fd, execb, *bsize(&execb));
-  close(fd);
-
-  putchar('*nok*n*n');
+  write(1, outb, *bsize(&outb));
+  
+  write(2, "*nok*n*n", 5);
   return(0);
 }
